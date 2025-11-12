@@ -58,3 +58,10 @@ async def call_user(request: Request):
     except Exception as e:
         print(f"❌ Unexpected error during call: {e}")
         return {"status": "error", "sid": "error"}
+@app.on_event("startup")
+def generate_greeting_once():
+    greeting = (
+        "Namaste! Main hoon Miss Riverwood — aapki AI voice agent from Riverwood Projects. Kaise madad kar sakti hoon aaj?"
+    )
+    print("🚀 Pre-generating greeting.mp3 at startup...")
+    speak(greeting, filename="greeting.mp3")
