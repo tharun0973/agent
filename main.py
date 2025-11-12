@@ -25,7 +25,8 @@ async def make_call(request: Request):
     client = Client(account_sid, auth_token)
 
     # Generate Twimlet URL to play the MP3
-    twimlet_url = f"https://twimlets.com/echo?Twiml=<Response><Play>{url}</Play></Response>"
+    twimlet_url = "https://twimlets.com/echo?Twiml=%3CResponse%3E%3CSay%20voice%3D%27Polly.Aditi%27%3ENamaste%20Sir%2C%20aaj%20aapne%20chai%20pi%3F%3C%2FSay%3E%3C%2FResponse%3E"
+
 
     try:
         call = client.calls.create(
