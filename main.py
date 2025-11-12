@@ -3,7 +3,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from agent_logic import generate_reply
 from voice_module import speak
 from twilio_module import make_call
-import os
+from twilio.base.exceptions import TwilioRestException  # ✅ Add this
 
 app = FastAPI()
 
@@ -45,5 +45,13 @@ async def call_user(request: Request):
     to_number = data.get("to")
     audio_url = data.get("url")
     print(f"📞 /call triggered for {to_number} with audio {audio_url}")
-    sid = make_call(to_number, audio_url)
-    return {"status": "calling", "sid": sid}
+    try:
+        sid = make_call(to_number, audio_url)
+        print(f"✅ Twilio call SID: {sid}")
+        return {"status": "calling", "sid": sid}
+    except TwilioRestException as e:
+        print(f"❌ Twilio call error: {e.code} — {e.msg}")
+        return {"status": "error", "sid": "error"}
+    except Exception as e:
+        print(f"❌ Unexpected error during call: {e}")
+        return {"status": "error", "sid": "error"}
