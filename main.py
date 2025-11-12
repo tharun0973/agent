@@ -44,20 +44,30 @@ def play_audio():
 
 @app.post("/call")
 async def call_user(request: Request):
-    data = await request.json()
-    to_number = data.get("to")
-    audio_url = data.get("url")
-    print(f"📞 /call triggered for {to_number} with audio {audio_url}")
+    print("📞 /call route hit")
     try:
+        data = await request.json()
+        print("📦 Payload received:", data)
+
+        to_number = data.get("to")
+        audio_url = data.get("url")
+
+        if not to_number or not audio_url:
+            raise ValueError("Missing 'to' or 'url' in payload")
+
+        print(f"📞 Initiating call to {to_number} with audio {audio_url}")
         sid = make_call(to_number, audio_url)
         print(f"✅ Twilio call SID: {sid}")
         return {"status": "calling", "sid": sid}
+
     except TwilioRestException as e:
-        print(f"❌ Twilio call error: {e.code} — {e.msg}")
-        return {"status": "error", "sid": "error"}
+        print(f"❌ Twilio error: {e.code} — {e.msg}")
+        return {"status": "error", "sid": "twilio_error", "message": str(e)}
+
     except Exception as e:
-        print(f"❌ Unexpected error during call: {e}")
-        return {"status": "error", "sid": "error"}
+        print(f"❌ General error in /call:", e)
+        return {"status": "error", "sid": "general_error", "message": str(e)}
+
 @app.on_event("startup")
 def generate_greeting_once():
     greeting = (
