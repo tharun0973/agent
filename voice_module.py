@@ -1,32 +1,33 @@
 import os
-from dotenv import load_dotenv
-from elevenlabs import play, save, VoiceSettings
-from elevenlabs.client import ElevenLabs
+import requests
 
-# Load environment variables
-load_dotenv()
-
-# Load API key and voice ID from .env
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
-VOICE_ID = os.getenv("ELEVEN_VOICE_ID")
+ELEVEN_VOICE_ID = os.getenv("ELEVEN_VOICE_ID")
 
-# Initialize ElevenLabs client
-client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
+def speak(text: str, filename: str = "output.mp3"):
+    print(f"🔊 Generating audio for: {text}")
+    url = f"https://api.elevenlabs.io/v1/text-to-speech/{ELEVEN_VOICE_ID}"
+    headers = {
+        "xi-api-key": ELEVENLABS_API_KEY,
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "text": text,
+        "model_id": "eleven_monolingual_v1",
+        "voice_settings": {
+            "stability": 0.5,
+            "similarity_boost": 0.5
+        }
+    }
 
-def speak(text: str, filename: str = "output.mp3") -> None:
-    """Generate speech from text and save to file."""
-    audio = client.text_to_speech.convert(
-        voice_id=VOICE_ID,
-        voice_settings=VoiceSettings(stability=0.5, similarity_boost=0.75),
-        text=text
-    )
-    save(audio, filename)
-
-def stream(text: str) -> None:
-    """Play speech directly from text."""
-    audio = client.text_to_speech.convert(
-        voice_id=VOICE_ID,
-        voice_settings=VoiceSettings(stability=0.5, similarity_boost=0.75),
-        text=text
-    )
-    play(audio)
+    try:
+        response = requests.post(url, headers=headers, json=payload, timeout=5)
+        print("✅ ElevenLabs response:", response.status_code)
+        response.raise_for_status()
+        with open(filename, "wb") as f:
+            f.write(response.content)
+        print(f"🎧 Audio saved to {filename}")
+    except Exception as e:
+        print("❌ ElevenLabs error:", e)
+        with open(filename, "wb") as f:
+            f.write(b"")  # Write empty fallback
