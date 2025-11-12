@@ -5,3 +5,4 @@ elevenlabs
 python-dotenv
 langchain
 elevenlabs==2.22.1
+twilio
