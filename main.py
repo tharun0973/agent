@@ -3,7 +3,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from agent_logic import generate_reply
 from voice_module import speak
 from twilio_module import make_call
-from twilio.base.exceptions import TwilioRestException  # ✅ Add this
+from twilio.base.exceptions import TwilioRestException
 
 app = FastAPI()
 
@@ -13,14 +13,14 @@ def ping():
     return {"status": "ok"}
 
 @app.get("/greet")
-def greet_user():
-    print("🔊 /greet triggered")
+def greet_user(request: Request):
+    print("🔊 /greet triggered by", request.headers.get("User-Agent"))
     greeting = (
         "Namaste! Main hoon Miss Riverwood — aapki AI voice agent from Riverwood Projects. Kaise madad kar sakti hoon aaj?"
     )
     try:
         speak(greeting, filename="greeting.mp3")
-        return FileResponse("greeting.mp3", media_type="audio/mpeg")
+        return FileResponse("greeting.mp3", media_type="audio/mpeg", filename="greeting.mp3")
     except Exception as e:
         print("❌ Error generating greeting:", e)
         return JSONResponse(content={"error": "Failed to generate greeting"}, status_code=500)
