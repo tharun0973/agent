@@ -4,6 +4,7 @@ from agent_logic import generate_reply
 from voice_module import speak
 from twilio_module import make_call
 from twilio.base.exceptions import TwilioRestException
+import os
 
 app = FastAPI()
 
@@ -20,6 +21,8 @@ def greet_user(request: Request):
     )
     try:
         speak(greeting, filename="greeting.mp3")
+        if not os.path.exists("greeting.mp3") or os.path.getsize("greeting.mp3") < 1000:
+            raise Exception("MP3 file not generated or too small")
         return FileResponse("greeting.mp3", media_type="audio/mpeg", filename="greeting.mp3")
     except Exception as e:
         print("❌ Error generating greeting:", e)

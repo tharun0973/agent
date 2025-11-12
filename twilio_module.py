@@ -10,7 +10,6 @@ client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 def make_call(to: str, audio_url: str) -> str:
     print(f"📞 Initiating call to {to} with audio from {audio_url}")
     try:
-        # Wrap the MP3 in a Twimlet-compatible XML
         twimlet_url = f"https://twimlets.com/echo?Twiml=<Response><Play>{audio_url}</Play></Response>"
         call = client.calls.create(
             to=to,
