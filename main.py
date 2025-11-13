@@ -1,14 +1,18 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import Response
 from twilio.rest import Client
-import openai, os
+from openai import OpenAI
+import os
 
 app = FastAPI()
-client_openai = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+client_openai = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 
 @app.get("/")
 def root():
     return {"status": "ok"}
+
 
 @app.post("/call")
 async def make_call(request: Request):
@@ -22,8 +26,15 @@ async def make_call(request: Request):
     client_twilio = Client(sid, token)
     url = "https://agent-production-c7df.up.railway.app/twiml"
 
-    call = client_twilio.calls.create(to=to, from_=from_num, url=url, method="GET")
+    call = client_twilio.calls.create(
+        to=to,
+        from_=from_num,
+        url=url,
+        method="GET"
+    )
+
     return {"status": "success", "sid": call.sid}
+
 
 @app.get("/twiml")
 async def twiml():
@@ -43,11 +54,13 @@ async def twiml():
 </Response>"""
     return Response(content=xml, media_type="application/xml")
 
+
 @app.post("/transcribe")
 async def transcribe(request: Request):
     form = await request.form()
     speech = form.get("SpeechResult") or ""
 
+    # No speech
     if not speech.strip():
         return Response(
             content="""<Response>
@@ -61,6 +74,7 @@ async def transcribe(request: Request):
             media_type="application/xml"
         )
 
+    # Ending call
     if any(w in speech.lower() for w in ["bye", "thanks", "thank you", "end", "stop"]):
         return Response(
             content="""<Response>
@@ -72,32 +86,19 @@ async def transcribe(request: Request):
             media_type="application/xml"
         )
 
-    response = client_openai.chat.completions.create(
+    # GPT response
+    result = client_openai.chat.completions.create(
         model="gpt-4o",
-        messages=[
-            {
-                "role": "user",
-                "content": f"""
-User said: {speech}
-
-Your job:
-- Reply in smooth, natural Hinglish (mix of English + Hindi).
-- Keep reply short (1–2 lines), clear, polite and friendly like a real phone agent.
-- If user speaks English → reply in English.
-- If user speaks Hindi → reply in Hinglish/Hindi.
-- If user says "repeat", "again boliye", "dobara bolo" → repeat the previous reply.
-- If user says "English please" → reply fully in English.
-- Never respond with long paragraphs.
-"""
-            }
-        ]
+        messages=[{
+            "role": "user",
+            "content": f"User said: {speech}. Reply naturally in short Hinglish. If user asks for English, reply in English."
+        }]
     )
 
-    reply = response.choices[0].message.content
+    reply = result.choices[0].message.content
 
     xml = f"""<Response>
         <Say voice="Polly.Aditi" language="en-IN">{reply}</Say>
-
         <Gather input="speech" speechTimeout="auto"
             action="https://agent-production-c7df.up.railway.app/transcribe"
             method="POST" />
