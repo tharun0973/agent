@@ -27,6 +27,7 @@ async def make_call(request: Request):
         call = client.calls.create(to=to, from_=from_number, url=twiml_url)
         return {"status": "success", "sid": call.sid}
     except Exception as e:
+        print("Error in /call:", str(e))
         return {"status": "error", "message": str(e)}
 
 @app.api_route("/twiml", methods=["GET", "POST"], response_class=PlainTextResponse)
@@ -41,18 +42,36 @@ async def twiml():
 
 @app.post("/transcribe", response_class=PlainTextResponse)
 async def transcribe(request: Request):
-    form = await request.form()
-    recording_url = form.get("RecordingUrl")
-    if not recording_url:
-        return "<Response><Say>Recording not found.</Say></Response>"
     try:
+        form = await request.form()
+        recording_url = form.get("RecordingUrl")
+        print("Recording URL:", recording_url)
+
+        if not recording_url:
+            return "<Response><Say>Recording not found.</Say></Response>"
+
         audio_bytes = requests.get(recording_url + ".mp3").content
         audio_file = BytesIO(audio_bytes)
         audio_file.name = "input.mp3"
+        print("Audio downloaded and wrapped")
+
         openai.api_key = os.getenv("OPENAI_API_KEY")
-        transcript = openai.Audio.transcribe(model="whisper-1", file=audio_file, response_format="text")
+        transcript = openai.Audio.transcribe(
+            model="whisper-1",
+            file=audio_file,
+            response_format="text"
+        )
+        print("Transcript:", transcript)
+
         prompt = f"User said: {transcript}\nReply warmly in Hinglish as Riverwood agent."
-        reply = openai.ChatCompletion.create(model="gpt-4o", messages=[{"role": "user", "content": prompt}])["choices"][0]["message"]["content"]
+        reply = openai.ChatCompletion.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}]
+        )["choices"][0]["message"]["content"]
+        print("GPT reply:", reply)
+
         return f"<Response><Say voice='Polly.Aditi'>{reply}</Say></Response>"
-    except Exception:
+
+    except Exception as e:
+        print("Error in /transcribe:", str(e))
         return "<Response><Say voice='Polly.Aditi'>Maaf kijiye, kuch takneeki samasya ho gayi hai.</Say></Response>"
