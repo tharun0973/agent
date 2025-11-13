@@ -74,13 +74,30 @@ async def transcribe(request: Request):
 
     response = client_openai.chat.completions.create(
         model="gpt-4o",
-        messages=[{"role": "user", "content": f"User said: {speech}. Reply in short Hinglish."}]
+        messages=[
+            {
+                "role": "user",
+                "content": f"""
+User said: {speech}
+
+Your job:
+- Reply in smooth, natural Hinglish (mix of English + Hindi).
+- Keep reply short (1–2 lines), clear, polite and friendly like a real phone agent.
+- If user speaks English → reply in English.
+- If user speaks Hindi → reply in Hinglish/Hindi.
+- If user says "repeat", "again boliye", "dobara bolo" → repeat the previous reply.
+- If user says "English please" → reply fully in English.
+- Never respond with long paragraphs.
+"""
+            }
+        ]
     )
 
     reply = response.choices[0].message.content
 
     xml = f"""<Response>
         <Say voice="Polly.Aditi" language="en-IN">{reply}</Say>
+
         <Gather input="speech" speechTimeout="auto"
             action="https://agent-production-c7df.up.railway.app/transcribe"
             method="POST" />
