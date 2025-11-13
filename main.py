@@ -28,7 +28,7 @@ async def make_call(request:Request):
   print("Error in /call:",str(e))
   return {"status":"error","message":str(e)}
 
-@app.get("/twiml")
+@app.api_route("/twiml", methods=["GET", "POST"])
 async def twiml():
  twiml_response = """<?xml version="1.0" encoding="UTF-8"?>
 <Response>
