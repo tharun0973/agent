@@ -39,18 +39,20 @@ async def twiml():
 </Response>
 """.strip()
 
-
 @app.post("/transcribe", response_class=PlainTextResponse)
 async def transcribe(request: Request):
     form = await request.form()
     recording_url = form.get("RecordingUrl")
     if not recording_url:
         return "<Response><Say>Recording not found.</Say></Response>"
-    audio_bytes = requests.get(recording_url + ".mp3").content
-    audio_file = BytesIO(audio_bytes)
-    audio_file.name = "input.mp3"
-    openai.api_key = os.getenv("OPENAI_API_KEY")
-    transcript = openai.Audio.transcribe(model="whisper-1", file=audio_file, response_format="text")
-    prompt = f"User said: {transcript}\nReply warmly in Hinglish as Riverwood agent."
-    reply = openai.ChatCompletion.create(model="gpt-4o", messages=[{"role": "user", "content": prompt}])["choices"][0]["message"]["content"]
-    return f"<Response><Say voice='Polly.Aditi'>{reply}</Say></Response>"
+    try:
+        audio_bytes = requests.get(recording_url + ".mp3").content
+        audio_file = BytesIO(audio_bytes)
+        audio_file.name = "input.mp3"
+        openai.api_key = os.getenv("OPENAI_API_KEY")
+        transcript = openai.Audio.transcribe(model="whisper-1", file=audio_file, response_format="text")
+        prompt = f"User said: {transcript}\nReply warmly in Hinglish as Riverwood agent."
+        reply = openai.ChatCompletion.create(model="gpt-4o", messages=[{"role": "user", "content": prompt}])["choices"][0]["message"]["content"]
+        return f"<Response><Say voice='Polly.Aditi'>{reply}</Say></Response>"
+    except Exception:
+        return "<Response><Say voice='Polly.Aditi'>Maaf kijiye, kuch takneeki samasya ho gayi hai.</Say></Response>"
