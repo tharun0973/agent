@@ -1,4 +1,3 @@
-cat << 'EOF' > README.md
 # AI Voice Call Agent
 
 A minimal Python-based voice call agent that can answer calls, play a greeting, and respond with AI-generated speech using Twilio and a TTS provider (OpenAI/ElevenLabs).
@@ -41,4 +40,4 @@ Use Railway or Render. Set your public URL as the Twilio Voice Webhook.
 
 ## License
 MIT
-EOF
+
