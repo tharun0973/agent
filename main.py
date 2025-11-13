@@ -33,7 +33,7 @@ async def twiml():
  twiml_response = """<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Say voice="Polly.Aditi" language="en-IN">Namaste Sir, Riverwood se bol rahe hain. Aaj aapke liye kya kar sakte hain?</Say>
-  <Gather input="speech" timeout="10" action="https://agent-production-c7df.up.railway.app/transcribe" method="POST"/>
+  <Gather input="speech" timeout="10" record="true" action="https://agent-production-c7df.up.railway.app/transcribe" method="POST"/>
   <Say voice="Polly.Aditi" language="en-IN">Maaf kijiye, hum aapki baat nahi sun paye.</Say>
 </Response>
 """
