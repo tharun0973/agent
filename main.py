@@ -38,7 +38,7 @@ async def make_call(request: Request):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-@app.get("/twiml", response_class=PlainTextResponse)
+@app.api_route("/twiml", methods=["GET", "POST"], response_class=PlainTextResponse)
 async def twiml():
     twiml_response = """
 <Response>
