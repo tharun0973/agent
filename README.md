@@ -10,16 +10,6 @@ A minimal Python-based voice call agent that can answer calls, play a greeting, 
 - Uses Twilio for handling calls
 - Clean modular code structure
 
-## Project Structure
-agent/
-├── main.py              # Entry point
-├── agent_logic.py       # What the agent says
-├── voice_module.py      # Text-to-speech generator
-├── twilio_module.py     # Twilio call handling
-├── greeting.mp3         # Sample voice
-├── requirements.txt
-└── .env                 # Environment variables
-
 ## Setup
 
 ### 1. Clone the repo
