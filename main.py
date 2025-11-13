@@ -2,10 +2,15 @@ from fastapi import FastAPI, Request
 from fastapi.responses import Response
 from twilio.rest import Client
 from openai import OpenAI
+from dotenv import load_dotenv
 import os
+
+# Load environment variables from .env
+load_dotenv()
 
 app = FastAPI()
 
+# OpenAI client
 client_openai = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
@@ -60,7 +65,7 @@ async def transcribe(request: Request):
     form = await request.form()
     speech = form.get("SpeechResult") or ""
 
-    # No speech
+    # No speech detected
     if not speech.strip():
         return Response(
             content="""<Response>
@@ -74,7 +79,7 @@ async def transcribe(request: Request):
             media_type="application/xml"
         )
 
-    # Ending call
+    # End call triggers
     if any(w in speech.lower() for w in ["bye", "thanks", "thank you", "end", "stop"]):
         return Response(
             content="""<Response>
@@ -86,7 +91,7 @@ async def transcribe(request: Request):
             media_type="application/xml"
         )
 
-    # GPT response
+    # Generate GPT reply
     result = client_openai.chat.completions.create(
         model="gpt-4o",
         messages=[{
