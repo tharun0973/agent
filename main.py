@@ -39,27 +39,32 @@ async def twiml():
  return Response(content=twiml_response, media_type="application/xml")
 
 @app.post("/transcribe")
-async def transcribe(request:Request):
+async def transcribe(request: Request):
  try:
   form = await request.form()
   url = form.get("RecordingUrl")
   if not url:
    return Response(content="<Response><Say voice='Polly.Aditi'>Koi audio nahi mila.</Say></Response>", media_type="application/xml")
   audio = requests.get(url + ".mp3").content
+  if len(audio) < 8000:
+   return Response(content="""<Response><Say voice='Polly.Aditi' language='en-IN'>Sir, aapki awaaz clear nahi aayi, kya aap repeat karenge?</Say><Record action="https://agent-production-c7df.up.railway.app/transcribe" method="POST" maxLength="15" trim="do-not-trim" playBeep="true"/></Response>""", media_type="application/xml")
   file = BytesIO(audio)
   file.name = "input.mp3"
   openai.api_key = os.getenv("OPENAI_API_KEY")
-  transcript = openai.Audio.transcribe(model="whisper-1", file=file, response_format="text")
+  try:
+   transcript = openai.Audio.transcribe(model="whisper-1", file=file, response_format="text")
+  except Exception as err:
+   print("Whisper failed:", err)
+   transcript = ""
+  print("Transcript:", transcript)
   if any(word in transcript.lower() for word in ["bye","thank you","thanks","bas","ho gaya","theek hai","close","end call"]):
-   goodbye = """<Response><Say voice="Polly.Aditi" language="en-IN">Thank you sir! Aapka din shubh ho.</Say><Hangup/></Response>"""
-   return Response(content=goodbye, media_type="application/xml")
+   return Response(content="""<Response><Say voice="Polly.Aditi" language="en-IN">Thank you sir! Aapka din shubh ho.</Say><Hangup/></Response>""", media_type="application/xml")
   prompt = f"""User said: {transcript}
-If the transcript is unclear, incomplete, or sounds cut, DO NOT guess wrong things.
-Instead, politely ask: "Sir, kya aap thoda clearly repeat kar sakte hain?"
-Otherwise reply warmly in Hinglish as a friendly Riverwood agent.
-Keep replies short and natural like a real phone call agent."""
+If the transcript is unclear or incomplete, politely ask: "Sir, kya aap thoda clearly repeat kar sakte hain?"
+Otherwise reply warmly in Hinglish. Keep replies short and natural."""
   reply = openai.ChatCompletion.create(model="gpt-4o", messages=[{"role":"user","content":prompt}])["choices"][0]["message"]["content"]
   twiml = f"""<Response><Say voice="Polly.Aditi" language="en-IN">{reply}</Say><Record action="https://agent-production-c7df.up.railway.app/transcribe" method="POST" maxLength="15" trim="do-not-trim" playBeep="true"/></Response>"""
   return Response(content=twiml, media_type="application/xml")
  except Exception as e:
+  print("General error:", e)
   return Response(content="<Response><Say voice='Polly.Aditi'>Maaf kijiye, system error hua.</Say></Response>", media_type="application/xml")
