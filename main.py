@@ -34,12 +34,11 @@ async def twiml():
     return """
 <Response>
     <Say voice="Polly.Aditi">Namaste Sir, Riverwood se bol rahe hain. Aaj aapke liye kya kar sakte hain?</Say>
-    <Gather input="speech" timeout="5" action="https://agent-production-c7df.up.railway.app/transcribe" method="POST">
-        <Say voice="Polly.Aditi">Kripya boliye, hum sun rahe hain.</Say>
-    </Gather>
+    <Gather input="speech" timeout="5" action="https://agent-production-c7df.up.railway.app/transcribe" method="POST"/>
     <Say voice="Polly.Aditi">Maaf kijiye, hum aapki baat nahi sun paye.</Say>
 </Response>
 """.strip()
+
 
 @app.post("/transcribe", response_class=PlainTextResponse)
 async def transcribe(request: Request):
