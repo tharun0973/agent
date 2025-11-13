@@ -34,9 +34,9 @@ async def make_call(request: Request):
 async def twiml():
     return """
 <Response>
-    <Say voice="Polly.Aditi">Namaste Sir, Riverwood se bol rahe hain. Aaj aapke liye kya kar sakte hain?</Say>
-    <Gather input="speech" timeout="5" action="https://agent-production-c7df.up.railway.app/transcribe" method="POST"/>
-    <Say voice="Polly.Aditi">Maaf kijiye, hum aapki baat nahi sun paye.</Say>
+    <Say voice="Polly.Ayesha">Namaste Sir, Riverwood se bol rahe hain. Aaj aapke liye kya kar sakte hain?</Say>
+    <Gather input="speech" timeout="10" action="https://agent-production-c7df.up.railway.app/transcribe" method="POST"/>
+    <Say voice="Polly.Ayesha">Maaf kijiye, hum aapki baat nahi sun paye.</Say>
 </Response>
 """.strip()
 
@@ -48,7 +48,7 @@ async def transcribe(request: Request):
         print("Recording URL:", recording_url)
 
         if not recording_url:
-            return "<Response><Say>Recording not found.</Say></Response>"
+            return "<Response><Say voice='Polly.Ayesha'>Recording not found.</Say></Response>"
 
         audio_bytes = requests.get(recording_url + ".mp3").content
         audio_file = BytesIO(audio_bytes)
@@ -70,8 +70,8 @@ async def transcribe(request: Request):
         )["choices"][0]["message"]["content"]
         print("GPT reply:", reply)
 
-        return f"<Response><Say voice='Polly.Aditi'>{reply}</Say></Response>"
+        return f"<Response><Say voice='Polly.Ayesha'>{reply}</Say></Response>"
 
     except Exception as e:
         print("Error in /transcribe:", str(e))
-        return "<Response><Say voice='Polly.Aditi'>Maaf kijiye, kuch takneeki samasya ho gayi hai.</Say></Response>"
+        return "<Response><Say voice='Polly.Ayesha'>Maaf kijiye, kuch takneeki samasya ho gayi hai.</Say></Response>"
