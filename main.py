@@ -32,12 +32,13 @@ async def make_call(request:Request):
 async def twiml():
  twiml_response = """<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="alice">Namaste Sir, Riverwood se bol rahe hain. Aaj aapke liye kya kar sakte hain?</Say>
+  <Say voice="Polly.Aditi" language="en-IN">Namaste Sir, Riverwood se bol rahe hain. Aaj aapke liye kya kar sakte hain?</Say>
   <Gather input="speech" timeout="10" action="https://agent-production-c7df.up.railway.app/transcribe" method="POST"/>
-  <Say voice="alice">Maaf kijiye, hum aapki baat nahi sun paye.</Say>
+  <Say voice="Polly.Aditi" language="en-IN">Maaf kijiye, hum aapki baat nahi sun paye.</Say>
 </Response>
 """
  return Response(content=twiml_response, media_type="application/xml")
+
 
 @app.post("/transcribe")
 async def transcribe(request:Request):
