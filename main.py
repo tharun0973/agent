@@ -22,12 +22,12 @@ async def make_call(request:Request):
  client = Client(sid,token)
  url = "https://agent-production-c7df.up.railway.app/twiml"
  try:
-  call = client.calls.create(to=to,from_=from_num,url=url)
+  call = client.calls.create(to=to,from_=from_num,url=url,method="GET")
   return {"status":"success","sid":call.sid}
  except Exception as e:
   return {"status":"error","message":str(e)}
 
-@app.api_route("/twiml", methods=["GET", "POST"])
+@app.get("/twiml")
 async def twiml():
  twiml_response = """<?xml version="1.0" encoding="UTF-8"?>
 <Response>
@@ -43,6 +43,7 @@ async def transcribe(request: Request):
  try:
   form = await request.form()
   url = form.get("RecordingUrl")
+  print("Recording URL:", url)
   if not url:
    return Response(content="<Response><Say voice='Polly.Aditi'>Koi audio nahi mila.</Say></Response>", media_type="application/xml")
   audio = requests.get(url + ".mp3").content
